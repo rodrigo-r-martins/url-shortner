@@ -10,7 +10,6 @@ A modern React application built with Vite, TypeScript, TanStack React Query, an
 - 📝 TypeScript for type safety
 - 🎯 Form validation and error handling
 - 💫 Loading states and user feedback
-- 🔗 Copy-to-clipboard functionality
 
 ## Tech Stack
 
@@ -86,6 +85,14 @@ The frontend communicates with the backend API at the following endpoints:
 ## Environment Configuration
 
 For production deployments, you may want to configure the API base URL via environment variables. Update `vite.config.ts` to support environment variables if needed.
+
+## Components
+
+The application includes the following main components:
+
+- **App** - Main application component with layout and routing
+- **UrlShortenerForm** - Form component for URL shortening with validation
+- **UI Components** - Reusable UI components (Button, Form, Spinner)
 
 ## Development Notes
 

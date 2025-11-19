@@ -36,22 +36,15 @@ Copy `.env.example` to `.env` and update with your MongoDB connection string:
 cp env.example .env
 ```
 
-Edit `.env`:
+Edit `.env`
 
-```
-MONGODB_URI=mongodb://localhost:27017/
-DATABASE_NAME=urlshortener
-NODE_ENV=development
-BASE_URL=http://localhost:8080
-HASH_ID_SALT=url-shortner
-PORT=8080
-```
-
-For MongoDB Atlas (cloud), use:
-
-```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
-```
+- `MONGODB_URI` - MongoDB connection string (default: `mongodb://localhost:27017/`)
+- `DATABASE_NAME` - Database name (default: `urlshortener`)
+- `BASE_URL` - Base URL for generated short URLs (default: `http://localhost:8080`)
+- `HASH_ID_SALT` - Salt for Hashids encoding (default: `url-shortner`)
+- `PORT` - Server port (default: `8080`)
+- `NODE_ENV` - Node environment (default: `development`)
+- `FRONTEND_URL` - Frontend URL for CORS configuration
 
 ### Building and Running the Server
 
@@ -177,6 +170,19 @@ Database-specific health check endpoint.
 }
 ```
 
+## Project Structure
+
+The backend follows a layered architecture with clear separation of concerns:
+
+- **app.ts** - Main application entry point with Express setup and middleware configuration
+- **config/** - Application configuration and environment variable management
+- **controllers/** - Request handlers and business logic orchestration
+- **services/** - Core business logic and service layer
+- **models/** - Database models and connection management
+- **routes/** - API route definitions and registration
+- **utils/** - Utility functions (logger, URL validator, short code generator)
+- **exceptions/** - Custom exception classes for error handling
+
 ## Database Schema
 
 The `urls` collection stores documents with the following structure:
@@ -205,16 +211,14 @@ Short codes are generated using:
 
 The system automatically retries up to 10 times if a collision is detected (duplicate short code), ensuring uniqueness. If a unique code cannot be generated after max attempts, a 500 error is returned.
 
-## Environment Variables
-
-- `MONGODB_URI` - MongoDB connection string (default: `mongodb://localhost:27017/`)
-- `DATABASE_NAME` - Database name (default: `urlshortener`)
-- `BASE_URL` - Base URL for generated short URLs (default: `http://localhost:8080`)
-- `HASH_ID_SALT` - Salt for Hashids encoding (default: `url-shortner`)
-- `PORT` - Server port (default: `8080`)
-- `NODE_ENV` - Node environment (default: `development`)
-- `FRONTEND_URL` - Frontend URL for CORS configuration
-
 ## Development
 
 The server supports CORS for development with the frontend. Make sure to update the frontend's API URL configuration when connecting.
+
+### Architecture Notes
+
+- **Dependency Injection**: Services are initialized with their dependencies in `app.ts` for better testability and modularity
+- **Logging**: Uses Pino for structured logging with HTTP request logging middleware
+- **Error Handling**: Custom exception classes provide consistent error responses
+- **Type Safety**: Full TypeScript support with strict type checking
+- **Graceful Shutdown**: Handles SIGTERM and SIGINT signals to close database connections properly
