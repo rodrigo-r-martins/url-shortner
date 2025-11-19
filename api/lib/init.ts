@@ -51,19 +51,32 @@ async function getUrlsCollection(): Promise<Collection<UrlDocument>> {
 }
 
 export async function getUrlService(): Promise<UrlService> {
-  const baseUrl = process.env.BASE_URL || (process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : 'http://localhost:8080');
-  
+  // Determine the deployment base URL
+  const deploymentBaseUrl =
+    process.env.BASE_URL ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:8080');
+
+  // When running on Vercel (serverless functions), generate short URLs that
+  // point directly to the API route (/api/:shortCode) to avoid relying on
+  // framework-level rewrites for root paths.
+  //
+  // Locally (or in non-Vercel environments), we keep using the plain base URL.
+  const isVercelEnvironment = !!process.env.VERCEL;
+  const baseUrl = isVercelEnvironment
+    ? `${deploymentBaseUrl}/api`
+    : deploymentBaseUrl;
+
   const hashIdSalt = process.env.HASH_ID_SALT || 'url-shortner';
-  
+
   const shortCodeGenerator = new ShortCodeGenerator(hashIdSalt);
   const urlValidator = new UrlValidator();
-  
+
   // Initialize database and collection
   const collection = await getUrlsCollection();
   const urlController = new UrlController(collection);
-  
+
   return new UrlService({
     urlController,
     shortCodeGenerator,
