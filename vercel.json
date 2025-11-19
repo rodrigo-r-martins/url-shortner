@@ -1,5 +1,4 @@
 {
-  "version": 2,
   "buildCommand": "cd frontend && npm ci && npm run build",
   "outputDirectory": "frontend/dist",
   "devCommand": "cd frontend && npm run dev",
@@ -7,18 +6,18 @@
   "framework": "vite",
   "cleanUrls": true,
   "trailingSlash": false,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     },
     {
-      "src": "/([a-zA-Z0-9]{4,8})",
-      "dest": "/api/$1"
+      "source": "/:shortCode([a-zA-Z0-9]{4,8})",
+      "destination": "/api/redirect?shortCode=:shortCode"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
