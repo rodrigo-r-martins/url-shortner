@@ -1,0 +1,15 @@
+{
+  "name": "url-shortener-api",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@vercel/node": "^3.0.0",
+    "mongodb": "^6.3.0",
+    "hashids": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.25",
+    "typescript": "^5.3.3"
+  }
+}
+
