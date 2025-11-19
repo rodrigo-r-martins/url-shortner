@@ -50,7 +50,7 @@ export class UrlService {
     // Check if URL already exists
     const existing = await this.urlController.findByLongUrl(longUrl);
     if (existing) {
-      return existing.toResponseDict(this.baseUrl);
+      return existing.toResponse(this.baseUrl);
     }
 
     // Generate new short code
@@ -59,7 +59,7 @@ export class UrlService {
 
       try {
         const urlModel = await this.urlController.create(shortCode, longUrl);
-        return urlModel.toResponseDict(this.baseUrl);
+        return urlModel.toResponse(this.baseUrl);
       } catch (error) {
         // Check if it's a duplicate key error (MongoDB error code 11000)
         const mongoError = error as MongoError;

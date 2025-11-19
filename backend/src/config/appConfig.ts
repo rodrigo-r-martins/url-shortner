@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { logger } from '../utils/logger.js';
 
 dotenv.config();
 
@@ -14,21 +15,14 @@ export class AppConfig {
   public readonly hashIdSalt: string;
 
   constructor() {
-    this._initializeConfig();
-  }
-
-  private _initializeConfig(): void {
     // Server configuration
     this.port = parseInt(process.env.PORT || '8080', 10);
-    this.debug = process.env.FLASK_DEBUG === 'True' || process.env.NODE_ENV === 'development';
-    this.env = process.env.FLASK_ENV || process.env.NODE_ENV || 'development';
+    this.debug = process.env.NODE_ENV === 'development';
+    this.env = process.env.NODE_ENV || 'development';
 
     // Application URLs
     this.baseUrl = process.env.BASE_URL || 'http://localhost:8080';
     this.frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-
-    // CORS configuration
-    this.allowedOrigins = this._buildAllowedOrigins();
 
     // Database configuration
     this.mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
@@ -36,6 +30,9 @@ export class AppConfig {
 
     // Hashids configuration
     this.hashIdSalt = process.env.HASH_ID_SALT || 'url-shortner';
+
+    // CORS configuration (needs to be last since it uses other properties)
+    this.allowedOrigins = this._buildAllowedOrigins();
   }
 
   private _buildAllowedOrigins(): string[] {
@@ -49,7 +46,7 @@ export class AppConfig {
       allowedOrigins.push('http://localhost:5173', 'http://127.0.0.1:5173');
     }
 
-    console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+    logger.debug({ allowedOrigins }, 'CORS origins configured');
 
     return allowedOrigins;
   }

@@ -5,6 +5,7 @@ import {
   UrlNotFoundError
 } from '../exceptions/urlExceptions.js';
 import { UrlService } from '../services/urlService.js';
+import { logger } from '../utils/logger.js';
 
 export function registerUrlRoutes(app: express.Application, urlService: UrlService): void {
   const router = express.Router();
@@ -12,36 +13,36 @@ export function registerUrlRoutes(app: express.Application, urlService: UrlServi
   router.post('/api/shorten', async (req: Request, res: Response): Promise<Response | void> => {
     const origin = req.headers.origin;
     const contentType = req.headers['content-type'];
-    console.log(`POST /api/shorten - origin=${origin} content_type=${contentType}`);
+    logger.debug({ origin, contentType }, 'POST /api/shorten request received');
 
     try {
       const payload = req.body || {};
-      console.log('Request JSON payload:', payload);
+      logger.debug({ payload }, 'Request payload');
 
       const longUrl = payload.url;
       if (!longUrl) {
-        console.warn("Missing 'url' in request body");
+        logger.warn('Missing url in request body');
         return res.status(400).json({ error: 'URL is required in the request body' });
       }
 
-      console.log(`Attempting to shorten URL: ${longUrl}`);
+      logger.info({ longUrl }, 'Attempting to shorten URL');
       const result = await urlService.shortenUrl(longUrl);
-      console.log(`Shorten success - shortCode=${result.shortCode} shortUrl=${result.shortUrl}`);
+      logger.info({ shortCode: result.shortCode, shortUrl: result.shortUrl }, 'URL shortened successfully');
       const statusCode = 201;
       return res.status(statusCode).json(result);
     } catch (error) {
       if (error instanceof UrlValidationError) {
-        console.warn(`Validation error: ${error.message}`);
+        logger.warn({ error: error.message }, 'URL validation error');
         return res.status(400).json({ error: error.message });
       }
 
       if (error instanceof ShortCodeGenerationError) {
-        console.error(`Short code generation error: ${error.message}`);
+        logger.error({ error: error.message }, 'Short code generation error');
         return res.status(500).json({ error: error.message });
       }
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Unhandled error in /api/shorten:', error);
+      logger.error({ error: errorMessage, stack: error instanceof Error ? error.stack : undefined }, 'Unhandled error in /api/shorten');
       return res.status(500).json({ error: `Server error: ${errorMessage}` });
     }
   });
@@ -49,20 +50,20 @@ export function registerUrlRoutes(app: express.Application, urlService: UrlServi
   router.get('/:shortCode', async (req: Request, res: Response): Promise<Response | void> => {
     const shortCode = req.params.shortCode;
     const origin = req.headers.origin;
-    console.log(`GET /${shortCode} - origin=${origin}`);
+    logger.debug({ shortCode, origin }, `GET /${shortCode} request received`);
 
     try {
       const longUrl = await urlService.getLongUrl(shortCode);
-      console.log(`Redirecting shortCode=${shortCode} to ${longUrl}`);
+      logger.info({ shortCode, longUrl }, 'Redirecting to long URL');
       return res.redirect(302, longUrl);
     } catch (error) {
       if (error instanceof UrlNotFoundError) {
-        console.warn(`Short code not found: ${shortCode}`);
+        logger.warn({ shortCode }, 'Short code not found');
         return res.status(404).json({ error: error.message });
       }
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`Unhandled error in redirect for shortCode=${shortCode}:`, error);
+      logger.error({ shortCode, error: errorMessage, stack: error instanceof Error ? error.stack : undefined }, 'Unhandled error in redirect');
       return res.status(500).json({ error: `Server error: ${errorMessage}` });
     }
   });

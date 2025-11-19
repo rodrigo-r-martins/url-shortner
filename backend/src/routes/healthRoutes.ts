@@ -5,7 +5,7 @@ import { AppConfig } from '../config/appConfig.js';
 export function registerHealthRoutes(app: express.Application, config: AppConfig): void {
   const router = express.Router();
 
-  router.get('/health', async (req: Request, res: Response): Promise<Response> => {
+  router.get('/health', async (_req: Request, res: Response): Promise<Response> => {
     try {
       const client = getClient();
       await client.db('admin').command({ ping: 1 });
@@ -23,7 +23,7 @@ export function registerHealthRoutes(app: express.Application, config: AppConfig
     }
   });
 
-  router.get('/db/health', async (req: Request, res: Response): Promise<Response> => {
+  router.get('/db/health', async (_req: Request, res: Response): Promise<Response> => {
     try {
       const client = getClient();
       await client.db('admin').command({ ping: 1 });

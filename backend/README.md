@@ -42,7 +42,6 @@ Edit `.env`:
 MONGODB_URI=mongodb://localhost:27017/
 DATABASE_NAME=urlshortener
 NODE_ENV=development
-FLASK_DEBUG=True
 BASE_URL=http://localhost:8080
 HASH_ID_SALT=url-shortner
 PORT=8080
@@ -214,7 +213,6 @@ The system automatically retries up to 10 times if a collision is detected (dupl
 - `HASH_ID_SALT` - Salt for Hashids encoding (default: `url-shortner`)
 - `PORT` - Server port (default: `8080`)
 - `NODE_ENV` - Node environment (default: `development`)
-- `FLASK_DEBUG` - Enable debug mode (default: `False`) - kept for compatibility
 - `FRONTEND_URL` - Frontend URL for CORS configuration
 
 ## Development

@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import pinoHttp from 'pino-http';
 import { AppConfig } from './config/appConfig.js';
 import { initializeDatabase, closeConnection } from './models/database.js';
 import { UrlController } from './controllers/urlController.js';
@@ -8,13 +9,14 @@ import { UrlValidator } from './utils/urlValidator.js';
 import { UrlService } from './services/urlService.js';
 import { registerUrlRoutes } from './routes/urlRoutes.js';
 import { registerHealthRoutes } from './routes/healthRoutes.js';
+import { logger } from './utils/logger.js';
 
 // Configure logging
-console.log('Initializing Express application...');
+logger.info('Initializing Express application...');
 
 // Initialize configuration
 const config = new AppConfig();
-console.log(`Allowed origins: ${config.allowedOrigins.join(', ')}`);
+logger.info({ allowedOrigins: config.allowedOrigins }, 'CORS configuration loaded');
 
 // Create Express app
 const app: Express = express();
@@ -26,12 +28,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// HTTP request logging middleware
+app.use(pinoHttp({ logger }));
+
 // Initialize database
-console.log(`Initializing database connection to ${config.databaseName}`);
+logger.info({ databaseName: config.databaseName }, 'Initializing database connection');
 initializeDatabase(config.mongodbUri, config.databaseName);
 
 // Initialize dependencies (Dependency Injection)
-console.log('Initializing service dependencies');
+logger.debug('Initializing service dependencies');
 const shortCodeGenerator = new ShortCodeGenerator(config.hashIdSalt);
 const urlValidator = new UrlValidator();
 const urlController = new UrlController();
@@ -43,32 +48,32 @@ const urlService = new UrlService({
 });
 
 // Register routes
-console.log('Registering routes');
+logger.debug('Registering routes');
 registerUrlRoutes(app, urlService);
 registerHealthRoutes(app, config);
 
-console.log('Application initialization complete');
+logger.info('Application initialization complete');
 
 // Start server
 const PORT = config.port;
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT} (debug=${config.debug})`);
+  logger.info({ port: PORT, debug: config.debug }, 'Server started');
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM signal received: closing HTTP server');
+  logger.info('SIGTERM signal received: closing HTTP server');
   server.close(async () => {
-    console.log('HTTP server closed');
+    logger.info('HTTP server closed');
     await closeConnection();
     process.exit(0);
   });
 });
 
 process.on('SIGINT', async () => {
-  console.log('SIGINT signal received: closing HTTP server');
+  logger.info('SIGINT signal received: closing HTTP server');
   server.close(async () => {
-    console.log('HTTP server closed');
+    logger.info('HTTP server closed');
     await closeConnection();
     process.exit(0);
   });

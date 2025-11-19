@@ -1,5 +1,6 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 import { UrlDocument } from './urlModel.js';
+import { logger } from '../utils/logger.js';
 
 // Global client instance
 let _client: MongoClient | null = null;
@@ -45,7 +46,7 @@ export async function getUrlsCollection(): Promise<Collection<UrlDocument>> {
     // Index creation will happen when MongoDB is available
     // This allows the app to start even if MongoDB is temporarily unavailable
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.warn('Could not create index (may already exist or DB unavailable):', errorMessage);
+    logger.warn({ error: errorMessage }, 'Could not create index (may already exist or DB unavailable)');
   }
 
   return collection;

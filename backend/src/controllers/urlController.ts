@@ -1,6 +1,6 @@
 import { Collection } from 'mongodb';
-import { getUrlsCollection, UrlDocument } from '../models/database.js';
-import { UrlModel } from '../models/urlModel.js';
+import { getUrlsCollection } from '../models/database.js';
+import { UrlModel, UrlDocument } from '../models/urlModel.js';
 
 export class UrlController {
   private _collection: Collection<UrlDocument> | null = null;
@@ -20,7 +20,7 @@ export class UrlController {
     const collection = await this.getCollection();
     const doc = await collection.findOne({ long_url: longUrl });
     if (doc) {
-      return UrlModel.fromDict(doc);
+      return UrlModel.fromDb(doc);
     }
     return null;
   }
@@ -29,7 +29,7 @@ export class UrlController {
     const collection = await this.getCollection();
     const doc = await collection.findOne({ short_code: shortCode });
     if (doc) {
-      return UrlModel.fromDict(doc);
+      return UrlModel.fromDb(doc);
     }
     return null;
   }
@@ -46,7 +46,7 @@ export class UrlController {
     });
 
     const collection = await this.getCollection();
-    const result = await collection.insertOne(urlModel.toDict());
+    const result = await collection.insertOne(urlModel.toDb());
     urlModel._id = result.insertedId;
 
     return urlModel;

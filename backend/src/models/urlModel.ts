@@ -37,7 +37,7 @@ export class UrlModel {
     this.createdAt = createdAt || new Date();
   }
 
-  toDict(): UrlDocument {
+  toDb(): UrlDocument {
     const result: UrlDocument = {
       short_code: this.shortCode,
       long_url: this.longUrl,
@@ -51,7 +51,7 @@ export class UrlModel {
     return result;
   }
 
-  static fromDict(doc: UrlDocument): UrlModel {
+  static fromDb(doc: UrlDocument): UrlModel {
     return new UrlModel({
       _id: doc._id || null,
       shortCode: doc.short_code,
@@ -60,7 +60,7 @@ export class UrlModel {
     });
   }
 
-  toResponseDict(baseUrl: string): UrlResponse {
+  toResponse(baseUrl: string): UrlResponse {
     return {
       shortUrl: `${baseUrl}/${this.shortCode}`,
       shortCode: this.shortCode,
