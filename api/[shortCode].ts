@@ -11,10 +11,32 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const shortCode = req.query.shortCode as string;
+  // Extract shortCode from query parameter (Vercel dynamic route)
+  // The parameter name matches the bracket name in the filename [shortCode].ts
+  let shortCode = req.query.shortCode as string | string[];
+  
+  // Handle array case (shouldn't happen, but be safe)
+  if (Array.isArray(shortCode)) {
+    shortCode = shortCode[0];
+  }
+  
+  // If not in query, try to extract from URL path as fallback
+  if (!shortCode && req.url) {
+    const pathMatch = req.url.match(/\/([a-zA-Z0-9]{4,8})(?:\?|$)/);
+    if (pathMatch) {
+      shortCode = pathMatch[1];
+    }
+  }
 
-  if (!shortCode) {
-    return res.status(400).json({ error: 'Short code is required' });
+  if (!shortCode || typeof shortCode !== 'string') {
+    return res.status(400).json({ 
+      error: 'Short code is required',
+      debug: {
+        query: req.query,
+        url: req.url,
+        method: req.method
+      }
+    });
   }
 
   try {

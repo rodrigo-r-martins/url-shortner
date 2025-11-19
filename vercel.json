@@ -2,7 +2,7 @@
   "buildCommand": "cd frontend && npm ci && npm run build",
   "outputDirectory": "frontend/dist",
   "devCommand": "cd frontend && npm run dev",
-  "installCommand": "cd backend && npm ci && cd ../frontend && npm ci",
+  "installCommand": "cd backend && npm ci && cd ../frontend && npm ci && cd ../api && npm ci",
   "framework": "vite",
   "cleanUrls": true,
   "trailingSlash": false,
