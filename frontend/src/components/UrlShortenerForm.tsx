@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Form } from "./ui/form";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
@@ -14,6 +14,9 @@ function UrlShortenerForm() {
   const [url, setUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
 
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const queryClient = useQueryClient();
+
   const validateUrl = (urlString: string): boolean => {
     try {
       const url = new URL(urlString);
@@ -25,15 +28,12 @@ function UrlShortenerForm() {
 
   const mutation = useMutation<ShortenUrlResponse, Error, string>({
     mutationFn: async (urlToShorten: string): Promise<ShortenUrlResponse> => {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
-      const allowedOrigin =
-        import.meta.env.VITE_ALLOWED_ORIGIN || "http://localhost:5173";
       const response = await fetch(`${apiUrl}/api/shorten`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": allowedOrigin,
         },
+        credentials: "include",
         body: JSON.stringify({ url: urlToShorten }),
       });
 
@@ -50,6 +50,8 @@ function UrlShortenerForm() {
       console.log("Shortened URL:", data);
       setUrl("");
       setError("");
+      // Refresh list of URLs in UserLinksList
+      void queryClient.invalidateQueries({ queryKey: ["user-urls"] });
     },
     onError: (error: Error) => {
       setError(error.message || "Failed to shorten URL");
@@ -99,24 +101,6 @@ function UrlShortenerForm() {
         {error && (
           <div className="bg-red-900/30 border border-red-700/50 text-red-300 px-5 py-3.5 rounded-xl text-sm backdrop-blur-sm">
             {error}
-          </div>
-        )}
-
-        {mutation.isSuccess && mutation.data && (
-          <div className="bg-emerald-900/30 border border-emerald-700/50 text-emerald-300 px-5 py-3.5 rounded-xl text-sm backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-emerald-400 font-medium">
-                Shortened URL:
-              </span>
-              <span
-                className="font-mono text-emerald-300 bg-emerald-900/20 px-3 py-1 rounded-md border border-emerald-700/30 hover:text-emerald-400 transition-all duration-200 cursor-pointer"
-                onClick={() => {
-                  window.open(mutation.data.shortUrl, "_blank");
-                }}
-              >
-                {mutation.data.shortUrl}
-              </span>
-            </div>
           </div>
         )}
 
