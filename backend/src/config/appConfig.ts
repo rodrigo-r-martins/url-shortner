@@ -13,6 +13,11 @@ export class AppConfig {
   public readonly mongodbUri: string;
   public readonly databaseName: string;
   public readonly hashIdSalt: string;
+  public readonly jwtSecret: string;
+  public readonly jwtExpiresIn: string;
+  public readonly authCookieName: string;
+  public readonly authCookieSecure: boolean;
+  public readonly authCookieSameSite: 'lax' | 'strict' | 'none';
 
   constructor() {
     // Server configuration
@@ -30,6 +35,15 @@ export class AppConfig {
 
     // Hashids configuration
     this.hashIdSalt = process.env.HASH_ID_SALT || 'url-shortner';
+
+    // Auth / JWT configuration
+    this.jwtSecret = process.env.JWT_SECRET || 'change-this-secret-in-production';
+    this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '15m';
+    this.authCookieName = process.env.JWT_COOKIE_NAME || 'auth_token';
+    this.authCookieSecure = this.env !== 'development';
+    const sameSite = (process.env.JWT_COOKIE_SAMESITE || 'lax').toLowerCase();
+    this.authCookieSameSite =
+      sameSite === 'strict' || sameSite === 'none' ? (sameSite as 'strict' | 'none') : 'lax';
 
     // CORS configuration (needs to be last since it uses other properties)
     this.allowedOrigins = this._buildAllowedOrigins();

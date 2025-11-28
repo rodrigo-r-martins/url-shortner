@@ -6,7 +6,7 @@ import {
   UrlNotFoundError,
   UrlValidationError
 } from '../exceptions/urlExceptions.js';
-import { UrlResponse } from '../models/urlModel.js';
+import { UrlModel, UrlResponse } from '../models/urlModel.js';
 
 interface MongoError extends Error {
   code?: number;
@@ -41,14 +41,14 @@ export class UrlService {
     this.maxAttempts = maxAttempts;
   }
 
-  async shortenUrl(longUrl: string): Promise<UrlResponse> {
+  async shortenUrl(longUrl: string, userId?: string): Promise<UrlResponse> {
     // Validate URL
     if (!this.urlValidator.validate(longUrl)) {
       throw new UrlValidationError('Invalid URL format. URL must start with http:// or https://');
     }
 
-    // Check if URL already exists
-    const existing = await this.urlController.findByLongUrl(longUrl);
+    // Check if URL already exists for this user (or globally if no userId)
+    const existing = await this.urlController.findByLongUrl(longUrl, userId);
     if (existing) {
       return existing.toResponse(this.baseUrl);
     }
@@ -58,7 +58,7 @@ export class UrlService {
       const shortCode = this.shortCodeGenerator.generate();
 
       try {
-        const urlModel = await this.urlController.create(shortCode, longUrl);
+        const urlModel = await this.urlController.create(shortCode, longUrl, null, userId);
         return urlModel.toResponse(this.baseUrl);
       } catch (error) {
         // Check if it's a duplicate key error (MongoDB error code 11000)
@@ -83,6 +83,18 @@ export class UrlService {
     }
 
     return urlModel.longUrl;
+  }
+
+  async listUrlsForUser(userId: string): Promise<UrlResponse[]> {
+    const urls: UrlModel[] = await this.urlController.findAllByUserId(userId);
+    return urls.map((u) => u.toResponse(this.baseUrl));
+  }
+
+  async deleteUrlForUser(userId: string, shortCode: string): Promise<void> {
+    const deleted = await this.urlController.deleteByShortCodeForUser(userId, shortCode);
+    if (!deleted) {
+      throw new UrlNotFoundError('Short URL not found');
+    }
   }
 }
 

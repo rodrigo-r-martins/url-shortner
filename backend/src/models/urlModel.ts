@@ -12,6 +12,7 @@ export interface UrlDocument {
   short_code: string;
   long_url: string;
   created_at: Date;
+  user_id?: ObjectId | null;
 }
 
 export class UrlModel {
@@ -19,22 +20,26 @@ export class UrlModel {
   public shortCode: string;
   public longUrl: string;
   public createdAt: Date;
+  public userId: ObjectId | null;
 
   constructor({
     shortCode,
     longUrl,
     createdAt = null,
+    userId = null,
     _id = null
   }: {
     shortCode: string;
     longUrl: string;
     createdAt?: Date | null;
+    userId?: ObjectId | null;
     _id?: ObjectId | null;
   }) {
     this._id = _id;
     this.shortCode = shortCode;
     this.longUrl = longUrl;
     this.createdAt = createdAt || new Date();
+    this.userId = userId;
   }
 
   toDb(): UrlDocument {
@@ -48,6 +53,10 @@ export class UrlModel {
       result._id = this._id;
     }
 
+    if (this.userId) {
+      result.user_id = this.userId;
+    }
+
     return result;
   }
 
@@ -56,7 +65,8 @@ export class UrlModel {
       _id: doc._id || null,
       shortCode: doc.short_code,
       longUrl: doc.long_url,
-      createdAt: doc.created_at
+      createdAt: doc.created_at,
+      userId: doc.user_id || null
     });
   }
 

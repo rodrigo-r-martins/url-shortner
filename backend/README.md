@@ -8,6 +8,10 @@ A TypeScript/Express.js backend service for the URL shortener application with M
 - GET `/<short_code>` - Redirect to original long URL
 - GET `/health` - Health check endpoint
 - GET `/db/health` - Database health check endpoint
+- POST `/api/auth/login` - Login with email and password (sets secure HTTP-only JWT cookie)
+- POST `/api/auth/logout` - Logout and clear the auth cookie
+- GET `/api/auth/me` - Get current authenticated user based on JWT cookie
+- GET `/api/dashboard/summary` - Protected endpoint returning basic dashboard stats
 - Cryptographically secure short code generation using Hashids with base62 alphabet
 - Unique short codes with collision detection and automatic retry
 - Duplicate URL detection (same long URL returns existing short URL)
@@ -45,6 +49,10 @@ Edit `.env`
 - `PORT` - Server port (default: `8080`)
 - `NODE_ENV` - Node environment (default: `development`)
 - `FRONTEND_URL` - Frontend URL for CORS configuration
+- `JWT_SECRET` - Secret key used to sign JWTs (required for authentication)
+- `JWT_EXPIRES_IN` - JWT lifetime (e.g. `15m`, `1h`)
+- `JWT_COOKIE_NAME` - Name of the HTTP-only cookie that stores the JWT (default: `auth_token`)
+- `JWT_COOKIE_SAMESITE` - SameSite mode for auth cookie (`lax`, `strict`, or `none`)
 
 ### Building and Running the Server
 
@@ -118,6 +126,128 @@ If the URL has already been shortened, the existing short URL is returned:
 
 - `400` - Invalid URL format or missing URL in body
 - `500` - Server error (e.g., failed to generate unique short code after max attempts)
+
+### GET `/api/urls`
+
+Returns all URLs created by the currently authenticated user.
+
+**Response (200 OK):**
+
+```json
+{
+  "urls": [
+    {
+      "shortUrl": "http://localhost:8080/abc12345",
+      "shortCode": "abc12345",
+      "longUrl": "https://example.com/very/long/url",
+      "created_at": "2024-11-03T12:34:56.789Z"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+
+- `401` - Not authenticated
+- `500` - Server error
+
+### DELETE `/api/urls/:shortCode`
+
+Deletes a URL owned by the currently authenticated user.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true
+}
+```
+
+**Error Responses:**
+
+- `401` - Not authenticated
+- `404` - URL not found for this user
+- `500` - Server error
+
+### POST `/api/auth/login`
+
+Authenticate a user and set a secure HTTP-only cookie with a short-lived JWT.
+
+**Request:**
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "strong-password"
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "user": {
+    "id": "656f5a4e...",
+    "email": "admin@example.com",
+    "role": "admin"
+  }
+}
+```
+
+On success, a JWT is stored in an HTTP-only cookie (not accessible via JavaScript).
+
+### POST `/api/auth/logout`
+
+Clears the authentication cookie.
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true
+}
+```
+
+### GET `/api/auth/me`
+
+Returns the current authenticated user based on the JWT cookie.
+
+**Response (200 OK):**
+
+```json
+{
+  "user": {
+    "id": "656f5a4e...",
+    "email": "admin@example.com",
+    "role": "admin"
+  }
+}
+```
+
+**Error (401):**
+
+```json
+{
+  "error": "Not authenticated"
+}
+```
+
+### GET `/api/dashboard/summary`
+
+Protected endpoint requiring a valid JWT cookie. Returns basic stats for the dashboard.
+
+**Response (200 OK):**
+
+```json
+{
+  "totalUrls": 42,
+  "user": {
+    "id": "656f5a4e...",
+    "email": "admin@example.com",
+    "role": "admin"
+  }
+}
+```
 
 ### GET `/<short_code>`
 

@@ -1,5 +1,6 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 import { UrlDocument } from './urlModel.js';
+import { UserDocument } from './userModel.js';
 import { logger } from '../utils/logger.js';
 
 // Global client instance
@@ -47,6 +48,21 @@ export async function getUrlsCollection(): Promise<Collection<UrlDocument>> {
     // This allows the app to start even if MongoDB is temporarily unavailable
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.warn({ error: errorMessage }, 'Could not create index (may already exist or DB unavailable)');
+  }
+
+  return collection;
+}
+
+export async function getUsersCollection(): Promise<Collection<UserDocument>> {
+  const db = await getDb();
+  const collection = db.collection<UserDocument>('users');
+
+  // Ensure index exists for email uniqueness (lazy creation)
+  try {
+    await collection.createIndex({ email: 1 }, { unique: true, background: true });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.warn({ error: errorMessage }, 'Could not create users email index (may already exist or DB unavailable)');
   }
 
   return collection;

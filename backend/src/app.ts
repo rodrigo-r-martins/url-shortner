@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
 import { AppConfig } from './config/appConfig.js';
 import { initializeDatabase, closeConnection } from './models/database.js';
@@ -9,6 +10,9 @@ import { UrlValidator } from './utils/urlValidator.js';
 import { UrlService } from './services/urlService.js';
 import { registerUrlRoutes } from './routes/urlRoutes.js';
 import { registerHealthRoutes } from './routes/healthRoutes.js';
+import { registerAuthRoutes } from './routes/authRoutes.js';
+import { registerDashboardRoutes } from './routes/dashboardRoutes.js';
+import { AuthService } from './services/authService.js';
 import { logger } from './utils/logger.js';
 
 // Configure logging
@@ -24,9 +28,10 @@ const app: Express = express();
 // Middleware
 app.use(cors({
   origin: config.allowedOrigins,
-  credentials: false
+  credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 // HTTP request logging middleware
 app.use(pinoHttp({ logger }));
@@ -46,10 +51,22 @@ const urlService = new UrlService({
   urlValidator,
   baseUrl: config.baseUrl
 });
+const authService = new AuthService({
+  jwtSecret: config.jwtSecret,
+  jwtExpiresIn: config.jwtExpiresIn
+});
+const authCookieConfig = {
+  name: config.authCookieName,
+  secure: config.authCookieSecure,
+  sameSite: config.authCookieSameSite,
+  httpOnly: true as const
+};
 
 // Register routes
 logger.debug('Registering routes');
-registerUrlRoutes(app, urlService);
+registerUrlRoutes(app, urlService, authService, authCookieConfig);
+registerAuthRoutes(app, authService, authCookieConfig);
+registerDashboardRoutes(app, authService, authCookieConfig);
 registerHealthRoutes(app, config);
 
 logger.info('Application initialization complete');
