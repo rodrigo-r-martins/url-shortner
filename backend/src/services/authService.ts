@@ -1,6 +1,6 @@
 import { Collection } from 'mongodb';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { getUsersCollection } from '../models/database.js';
 import { UserDocument, UserModel, UserRole, UserSafeResponse } from '../models/userModel.js';
 import { logger } from '../utils/logger.js';
@@ -90,9 +90,11 @@ export class AuthService {
       role: user.role
     };
 
-    return jwt.sign(payload, this.jwtSecret, {
+    const options: SignOptions = {
       expiresIn: this.jwtExpiresIn
-    });
+    };
+
+    return jwt.sign(payload, this.jwtSecret, options);
   }
 
   verifyJwt(token: string): JwtPayload {
