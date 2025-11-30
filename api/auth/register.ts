@@ -1,59 +1,16 @@
-import { AuthService } from '../../backend/src/services/authService.js';
-import { initializeDatabase } from '../../backend/src/models/database.js';
-import { getAllowedOrigins } from '../lib/init.js';
+import {
+  applyCors,
+  getAuthService,
+  VercelRequestWithBody,
+  VercelResponseFull
+} from '../lib/auth.js';
 
-type VercelRequest = {
-  method?: string;
-  headers: Record<string, string | string[] | undefined>;
-  body?: unknown;
-};
-
-type VercelResponse = {
-  status: (code: number) => VercelResponse;
-  json: (body: unknown) => void;
-  setHeader: (name: string, value: string) => void;
-  end: () => void;
-};
-
-let authService: AuthService | null = null;
-let dbInitialized = false;
-
-function getAuthService(): AuthService {
-  if (!dbInitialized) {
-    const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
-    const databaseName = process.env.DATABASE_NAME || 'urlshortener';
-    initializeDatabase(mongodbUri, databaseName);
-    dbInitialized = true;
-  }
-
-  if (!authService) {
-    const jwtSecret = process.env.JWT_SECRET;
-    const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '15m';
-
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not configured');
-    }
-
-    authService = new AuthService({
-      jwtSecret,
-      jwtExpiresIn,
-    });
-  }
-
-  return authService;
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(
+  req: VercelRequestWithBody<{ email?: string; password?: string }>,
+  res: VercelResponseFull
+) {
   // CORS
-  const allowedOrigins = getAllowedOrigins();
-  const origin = req.headers.origin as string | undefined;
-
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  applyCors(res, req.headers, 'POST, OPTIONS');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -64,10 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { email, password } = (req.body || {}) as {
-      email?: string;
-      password?: string;
-    };
+    const { email, password } = req.body || {};
 
     if (!email || !password) {
       return res

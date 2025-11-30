@@ -1,9 +1,13 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getDatabase } from '../lib/init.js';
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
+  req: {
+    method?: string;
+  },
+  res: {
+    status: (code: number) => typeof res;
+    json: (body: unknown) => void;
+  }
 ) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });

@@ -1,92 +1,21 @@
-import jwt from 'jsonwebtoken';
-import { getUrlService, getAllowedOrigins } from './lib/init.js';
+import { getUrlService } from './lib/init.js';
 import {
   UrlValidationError,
   ShortCodeGenerationError
 } from '../backend/src/exceptions/urlExceptions.js';
-
-// Minimal Vercel types to avoid depending on @vercel/node type package
-type VercelRequest = {
-  method?: string;
-  headers: Record<string, string | string[] | undefined>;
-  body?: unknown;
-};
-
-type VercelResponse = {
-  status: (code: number) => VercelResponse;
-  json: (body: unknown) => void;
-  setHeader: (name: string, value: string) => void;
-  end: () => void;
-};
-
-type JwtPayload = {
-  sub: string;
-  email: string;
-  role: string;
-  iat?: number;
-  exp?: number;
-};
-
-function parseCookies(cookieHeader: string | undefined): Record<string, string> {
-  const cookies: Record<string, string> = {};
-  if (!cookieHeader) return cookies;
-
-  const parts = cookieHeader.split(';');
-  for (const part of parts) {
-    const [name, ...rest] = part.trim().split('=');
-    if (!name) continue;
-    const value = rest.join('=');
-    cookies[name] = decodeURIComponent(value || '');
-  }
-  return cookies;
-}
-
-function getUserIdFromRequest(req: VercelRequest): string | null {
-  const cookieHeader =
-    (req.headers as Record<string, string | string[] | undefined>).cookie ||
-    (req.headers as Record<string, string | string[] | undefined>).Cookie;
-  const cookies = parseCookies(
-    Array.isArray(cookieHeader) ? cookieHeader.join(';') : cookieHeader
-  );
-
-  const cookieName = process.env.JWT_COOKIE_NAME || 'auth_token';
-  const token = cookies[cookieName];
-  if (!token) {
-    return null;
-  }
-
-  const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret) {
-    console.error('JWT_SECRET is not configured');
-    return null;
-  }
-
-  try {
-    const payload = jwt.verify(token, jwtSecret) as JwtPayload;
-    if (payload && typeof payload.sub === 'string') {
-      return payload.sub;
-    }
-    return null;
-  } catch (error) {
-    console.warn('Failed to verify JWT in api/shorten:', error);
-    return null;
-  }
-}
+import {
+  applyCors,
+  getUserIdFromHeaders,
+  VercelRequestWithBody,
+  VercelResponseFull
+} from './lib/auth.js';
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
+  req: VercelRequestWithBody<{ url?: string }>,
+  res: VercelResponseFull
 ) {
   // Handle CORS
-  const allowedOrigins = getAllowedOrigins();
-  const origin = req.headers.origin as string | undefined;
-
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  applyCors(res, req.headers, 'POST, OPTIONS');
 
   // Handle preflight
   if (req.method === 'OPTIONS') {
@@ -99,14 +28,13 @@ export default async function handler(
   }
 
   // Authenticate user via JWT cookie
-  const userId = getUserIdFromRequest(req);
+  const userId = getUserIdFromHeaders(req.headers);
   if (!userId) {
     return res.status(401).json({ error: 'Not authenticated' });
   }
 
   try {
-    const payload = (req.body || {}) as { url?: string };
-    const longUrl = payload.url;
+    const { url: longUrl } = req.body || {};
 
     if (!longUrl) {
       return res
