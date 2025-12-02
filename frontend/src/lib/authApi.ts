@@ -9,7 +9,7 @@ interface AuthResponse {
   user: AuthUser;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function login(email: string, password: string): Promise<AuthUser> {
   const response = await fetch(`${API_URL}/api/auth/login`, {
