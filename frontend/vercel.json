@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://backend-holy-shadow-7671.fly.dev/api/:path*"
+    },
+    {
+      "source": "/:shortCode([a-zA-Z0-9]{4,8})",
+      "destination": "https://backend-holy-shadow-7671.fly.dev/:shortCode"
+    }
+  ]
+}
+
+
