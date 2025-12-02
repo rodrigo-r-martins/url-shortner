@@ -64,10 +64,10 @@ const authCookieConfig = {
 
 // Register routes
 logger.debug('Registering routes');
-registerUrlRoutes(app, urlService, authService, authCookieConfig);
 registerAuthRoutes(app, authService, authCookieConfig);
 registerDashboardRoutes(app, authService, authCookieConfig);
 registerHealthRoutes(app, config);
+registerUrlRoutes(app, urlService, authService, authCookieConfig);
 
 logger.info('Application initialization complete');
 
