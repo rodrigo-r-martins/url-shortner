@@ -1,9 +1,0 @@
-backend/dist
-backend/node_modules
-frontend/node_modules
-*.log
-api/**/*.test.ts
-api/**/*.spec.ts
-api/test-utils
-api/vitest.config.ts
-
