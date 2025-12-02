@@ -1,0 +1,50 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">encurt favicon</title>
+  <desc id="desc">Stylized blue U-shaped path with an orange arrow pointing right on a dark circular background.</desc>
+  <!-- Dark circular background -->
+  <defs>
+    <radialGradient id="bgGradient" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#27384f"/>
+      <stop offset="60%" stop-color="#152133"/>
+      <stop offset="100%" stop-color="#090f1a"/>
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="256" fill="url(#bgGradient)"/>
+
+  <!-- Outer U shape -->
+  <path
+    d="M176 120
+       C176 120 176 260 176 272
+       C176 322 210 352 256 352
+       C302 352 336 322 336 272
+       C336 260 336 120 336 120"
+    fill="none"
+    stroke="#00a2ff"
+    stroke-width="44"
+    stroke-linecap="round"
+  />
+
+  <!-- Inner U shape -->
+  <path
+    d="M196 132
+       C196 132 196 260 196 272
+       C196 310 222 334 256 334
+       C290 334 316 310 316 272
+       C316 260 316 132 316 132"
+    fill="none"
+    stroke="#37d1ff"
+    stroke-width="22"
+    stroke-linecap="round"
+  />
+
+  <!-- Horizontal connector for the arrow base -->
+  <rect x="252" y="214" width="90" height="28" rx="14" fill="#f79b1b"/>
+
+  <!-- Arrow head -->
+  <path
+    d="M342 196 L396 228 L342 260 Z"
+    fill="#ffb347"
+  />
+</svg>
+
+
