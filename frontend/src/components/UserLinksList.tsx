@@ -19,7 +19,6 @@ function UserLinksList() {
   const [deletingShortCode, setDeletingShortCode] = useState<string | null>(
     null
   );
-  const apiUrl = import.meta.env.VITE_API_URL || "";
   const queryClient = useQueryClient();
 
   const {
@@ -29,7 +28,7 @@ function UserLinksList() {
   } = useQuery<UserUrlsResponse, Error>({
     queryKey: ["user-urls"],
     queryFn: async () => {
-      const response = await fetch(`${apiUrl}/api/urls`, {
+      const response = await fetch("/api/urls", {
         method: "GET",
         credentials: "include",
       });

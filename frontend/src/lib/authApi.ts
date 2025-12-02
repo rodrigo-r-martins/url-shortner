@@ -9,10 +9,8 @@ interface AuthResponse {
   user: AuthUser;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "";
-
 export async function login(email: string, password: string): Promise<AuthUser> {
-  const response = await fetch(`${API_URL}/api/auth/login`, {
+  const response = await fetch("/api/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,7 +36,7 @@ export async function register(
   email: string,
   password: string
 ): Promise<AuthUser> {
-  const response = await fetch(`${API_URL}/api/auth/register`, {
+  const response = await fetch("/api/auth/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -61,14 +59,14 @@ export async function register(
 }
 
 export async function logout(): Promise<void> {
-  await fetch(`${API_URL}/api/auth/logout`, {
+  await fetch("/api/auth/logout", {
     method: "POST",
     credentials: "include",
   });
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
-  const response = await fetch(`${API_URL}/api/auth/me`, {
+  const response = await fetch("/api/auth/me", {
     method: "GET",
     credentials: "include",
   });
@@ -89,7 +87,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 export async function deleteUrl(shortCode: string): Promise<void> {
-  const response = await fetch(`${API_URL}/api/urls/${encodeURIComponent(shortCode)}`, {
+  const response = await fetch(`/api/urls/${encodeURIComponent(shortCode)}`, {
     method: "DELETE",
     credentials: "include",
   });

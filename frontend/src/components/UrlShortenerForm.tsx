@@ -14,7 +14,6 @@ function UrlShortenerForm() {
   const [url, setUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
 
-  const apiUrl = import.meta.env.VITE_API_URL || "";
   const queryClient = useQueryClient();
 
   const validateUrl = (urlString: string): boolean => {
@@ -28,7 +27,7 @@ function UrlShortenerForm() {
 
   const mutation = useMutation<ShortenUrlResponse, Error, string>({
     mutationFn: async (urlToShorten: string): Promise<ShortenUrlResponse> => {
-      const response = await fetch(`${apiUrl}/api/shorten`, {
+      const response = await fetch("/api/shorten", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
