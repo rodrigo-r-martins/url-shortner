@@ -13,7 +13,7 @@
     },
     {
       "source": "/:shortCode([a-zA-Z0-9]{4,8})",
-      "destination": "https://backend-holy-shadow-7671.fly.dev/redirect?shortCode=:shortCode"
+      "destination": "https://backend-holy-shadow-7671.fly.dev/:shortCode"
     },
     {
       "source": "/(.*)",
