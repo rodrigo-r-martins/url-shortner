@@ -45,7 +45,8 @@ A full-stack URL shortener that:
 
 ### Infrastructure
 
-- **Vercel** - Frontend hosting and serverless API functions
+- **Fly.io** - Backend hosting for the Dockerized Express/TypeScript API
+- **Vercel** - Frontend hosting with rewrites that proxy requests to the Fly.io backend
 - **MongoDB Atlas/Cloud** - Database hosting (optional)
 - **Redis** - In-memory data store (planned) - Counter-based short code generation and caching layer
 
@@ -102,7 +103,7 @@ The application plans to integrate Redis for enhanced performance and scalabilit
 
 For detailed implementation plan, see [REDIS_IMPLEMENTATION_PLAN.md](./planning/REDIS_IMPLEMENTATION_PLAN.md)
 
-For detailed setup instructions, see:
+For detailed setup and deployment instructions, see:
 
 - [Frontend README](./frontend/README.md)
 - [Backend README](./backend/README.md)

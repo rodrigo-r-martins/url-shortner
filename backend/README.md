@@ -84,6 +84,68 @@ npm run type-check
 
 The server will start on `http://localhost:8080` (or the PORT specified in `.env`).
 
+## Deployment (Fly.io)
+
+This backend is configured to be deployed to **Fly.io** using the provided `Dockerfile` and `fly.toml`.
+
+### Prerequisites
+
+- A Fly.io account
+- The Fly CLI (`flyctl`) installed locally
+- A MongoDB instance reachable from Fly (e.g., MongoDB Atlas)
+
+### One-time Fly.io setup
+
+From the `backend` directory:
+
+```bash
+fly launch
+```
+
+This command:
+
+- Creates a Fly app (e.g. `backend-holy-shadow-7671`, as referenced in the project config)
+- Generates `fly.toml`
+- Detects the `Dockerfile` for building the image
+
+If you already have `fly.toml` and an app created, you can skip `fly launch` next time and go straight to deploy.
+
+### Environment variables / secrets
+
+Set your production configuration as Fly secrets so they are available at runtime:
+
+```bash
+fly secrets set \
+  MONGODB_URI="your-mongodb-connection-string" \
+  DATABASE_NAME="urlshortener" \
+  BASE_URL="https://backend-holy-shadow-7671.fly.dev" \
+  HASH_ID_SALT="your-secure-salt" \
+  JWT_SECRET="your-production-jwt-secret" \
+  JWT_EXPIRES_IN="15m" \
+  JWT_COOKIE_NAME="auth_token" \
+  JWT_COOKIE_SAMESITE="lax" \
+  FRONTEND_URL="https://your-frontend-domain"
+```
+
+- `BASE_URL` should point to the public URL of your Fly app (or your custom domain).
+- `FRONTEND_URL` should be the URL of your Vercel frontend so CORS works correctly.
+
+### Deploying to Fly.io
+
+From the `backend` directory:
+
+```bash
+fly deploy
+```
+
+Fly will:
+
+- Build the Docker image using the `Dockerfile` (Node 24 + production build)
+- Run the app exposing port `8080` internally (as configured in `fly.toml`)
+- Make it available at `https://<your-app-name>.fly.dev` (or your custom domain)
+
+After deployment, the Vercel frontend can communicate with the backend via relative `/api/...` paths, which are proxied to this Fly app by the Vercel rewrites configuration.
+
 ## API Endpoints
 
 ### POST `/api/shorten`

@@ -86,6 +86,28 @@ The frontend communicates with the backend API at the following endpoints:
 
 For production deployments, you may want to configure the API base URL via environment variables. Update `vite.config.ts` to support environment variables if needed.
 
+In this project, the frontend uses **relative** API paths (e.g. `/api/auth/login`), and Vercel rewrites are used to proxy these requests to the backend deployed on Fly.io.
+
+## Deployment (Vercel)
+
+The recommended production deployment for the frontend is **Vercel**.
+
+Key points:
+
+- The frontend is built as a standard Vite app (`npm run build`).
+- Vercel serves the static assets from the Vite `dist` output.
+- API requests (e.g. `/api/*`) and short URL paths (e.g. `/abcd12`) are forwarded to the Fly.io backend using rewrites.
+
+The repository includes a Vercel configuration file (e.g. `frontend/vercel.json`) that demonstrates these rewrites:
+
+- `"/api/:path*"` → `https://backend-holy-shadow-7671.fly.dev/api/:path*`
+- `"/:shortCode([a-zA-Z0-9]{4,8})"` → `https://backend-holy-shadow-7671.fly.dev/:shortCode`
+
+You can either:
+
+- Use this file directly in your Vercel project, or
+- Adapt it to point to your own Fly.io app domain or custom domain.
+
 ## Components
 
 The application includes the following main components:
