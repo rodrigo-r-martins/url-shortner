@@ -35,7 +35,41 @@ app.use(express.json());
 app.use(cookieParser());
 
 // HTTP request logging middleware
-app.use(pinoHttp({ logger }));
+app.use(
+  pinoHttp({
+    logger,
+    // Keep request/response logs compact and focused
+    serializers: {
+      req(req) {
+        const anyReq = req as any;
+        return {
+          id: anyReq.id,
+          method: req.method,
+          url: req.url,
+          remoteAddress:
+            anyReq.socket?.remoteAddress ??
+            anyReq.ip ??
+            anyReq.raw?.connection?.remoteAddress ??
+            undefined
+        };
+      },
+      res(res) {
+        return {
+          statusCode: res.statusCode
+        };
+      }
+    },
+    // Map status codes to clearer log levels
+    customLogLevel(res, err) {
+      // We only want to use the HTTP status code to decide the level.
+      // Even if an internal error object exists, treat the log level
+      // based on the final response that went out.
+      if (res.statusCode >= 500) return 'error';
+      if (res.statusCode >= 400) return 'warn';
+      return 'info';
+    }
+  })
+);
 
 // Initialize database
 logger.info({ databaseName: config.databaseName }, 'Initializing database connection');
