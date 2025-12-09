@@ -60,12 +60,12 @@ app.use(
       }
     },
     // Map status codes to clearer log levels
-    customLogLevel(res, err) {
+    customLogLevel(res, _) {
       // We only want to use the HTTP status code to decide the level.
       // Even if an internal error object exists, treat the log level
       // based on the final response that went out.
-      if (res.statusCode >= 500) return 'error';
-      if (res.statusCode >= 400) return 'warn';
+      if (res.statusCode && res.statusCode >= 500) return 'error';
+      if (res.statusCode && res.statusCode >= 400) return 'warn';
       return 'info';
     }
   })
