@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
 import { AppConfig } from './config/appConfig.js';
 import { initializeDatabase, closeConnection } from './models/database.js';
+import { initializeRedis, closeRedisConnection } from './models/redis.js';
 import { UrlController } from './controllers/urlController.js';
 import { ShortCodeGenerator } from './utils/shortCodeGenerator.js';
 import { UrlValidator } from './utils/urlValidator.js';
@@ -39,6 +40,10 @@ app.use(pinoHttp({ logger }));
 // Initialize database
 logger.info({ databaseName: config.databaseName }, 'Initializing database connection');
 initializeDatabase(config.mongodbUri, config.databaseName);
+
+// Initialize Redis
+logger.info('Initializing Redis connection');
+initializeRedis(config.redisUrl);
 
 // Initialize dependencies (Dependency Injection)
 logger.debug('Initializing service dependencies');
@@ -83,6 +88,7 @@ process.on('SIGTERM', async () => {
   server.close(async () => {
     logger.info('HTTP server closed');
     await closeConnection();
+    await closeRedisConnection();
     process.exit(0);
   });
 });
@@ -92,6 +98,7 @@ process.on('SIGINT', async () => {
   server.close(async () => {
     logger.info('HTTP server closed');
     await closeConnection();
+    await closeRedisConnection();
     process.exit(0);
   });
 });

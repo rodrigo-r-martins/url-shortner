@@ -12,6 +12,7 @@ export class AppConfig {
   public readonly allowedOrigins: string[];
   public readonly mongodbUri: string;
   public readonly databaseName: string;
+  public readonly redisUrl: string;
   public readonly hashIdSalt: string;
   public readonly jwtSecret: string;
   public readonly jwtExpiresIn: string;
@@ -32,6 +33,8 @@ export class AppConfig {
     // Database configuration
     this.mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
     this.databaseName = process.env.DATABASE_NAME || 'urlshortener';
+
+    this.redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
     // Hashids configuration
     this.hashIdSalt = process.env.HASH_ID_SALT || 'url-shortner';

@@ -28,7 +28,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.3.0",
     "pino": "^8.17.0",
-    "pino-http": "^8.6.0"
+    "pino-http": "^8.6.0",
+    "redis": "^5.10.0"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",
